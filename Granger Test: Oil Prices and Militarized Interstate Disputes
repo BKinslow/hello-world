@@ -1,0 +1,143 @@
+# Georgetown University
+# SEST 704 Intelligence Analytics
+# Lab 3: Computer Exercises
+# Section 5: RStudio
+# 22 February 2017
+
+# 5.1. Initial data exploration, reproducing results from Excel
+
+# Clear variables, close all plots, restore defaults
+rm(list=ls())
+dev.off()
+cat("\014")
+
+# Install library to plot
+#install.packages("ggplot2")
+#install.packages("RColorBrewer")
+#install.packages("lattice")
+#install.packages("xts")
+#install.packages("forecast")
+#install.packages("lmtest")
+library(ggplot2)
+library(RColorBrewer) #for brewer.pal()
+library("lattice") # For contourplot at the end
+library(lmtest)
+
+# Read data
+mydata <- read.csv("MID_Oil_Data.csv")
+
+# Make quick line graph
+plot.ts(mydata$Total.Month, mydata$Oil_Price, xlab = "Month (beginning in May 1987)",ylab = "Price (per barrel)", xlim=c(0,300), main="Brent Oil Prices", type = "l")
+axis(labels = NA, side = 1, tck = 0.015,at=c(seq(from=0,to=300,by=5)))
+axis(labels = NA, side = 2, tck = 0.015,at=c(seq(from=0,to=130,by=5)))
+plot.ts(mydata$Total.Month, mydata$Disputes, xlab = "Month (beginning in May 1987)", ylab = "Incidents", xlim=c(0,300), ylim=c(0,12), main = "Militarized Interstate Disputes", type = "l")
+axis(labels = NA, side = 1, tck = 0.015,at=c(seq(from=0,to=300,by=5)))
+axis(labels = NA, side = 2, tck = 0.015,at=c(seq(from=0,to=12,by=1)))
+plot.ts(mydata$Total.Month, mydata$Percent_Change, type = "l", main = "Percent Change in Oil Pirces", xlab = "Month", ylab = "Percent Change")
+
+# test for unit root and number of differences required, you can also test for seasonality with nsdiffs
+library(forecast)
+ndiffs(mydata$Oil_Price, alpha=0.05,test=c("kpss"))
+ndiffs(mydata$Disputes, alpha=0.05,test=c("kpss"))
+
+#differentiated Time Series
+dPrice <- diff(mydata$Oil_Price)
+dDisputes <- diff(mydata$Disputes)
+plot.ts(dPrice, xlim=c(0,300))
+plot.ts(dDisputes, xlim=c(0,300))
+
+#Does changes in oil price cause disputes?
+grangertest(dDisputes ~ dPrice, order=5)
+
+#Do disputes cause oil price changes?
+grangertest(dPrice ~ dDisputes, order=5)
+
+#Granger on the raw data (not differentiated)
+grangertest(mydata$Oil_Price ~ mydata$Disputes, order = 1)
+grangertest(mydata$Disputes ~ mydata$Oil_Price, order = 1)
+
+#Granger on Percent Change
+grangertest(mydata$Percent_Change ~ mydata$Disputes, order = 4)
+grangertest(mydata$Disputes ~ mydata$Percent_Change, order = 4)
+
+#Smooth Oil Price Data
+
+mydata$index <- 1:nrow(mydata) # Create Index Value
+loessMod10 <- loess(mydata$Oil_Price ~ index, data=mydata, span=0.10) # 10 % Smoothing
+#loessMod25 <- loess(mydata$Oil_Price ~ index, data=mydata, span=0.25) # 25% Smoothing
+#loessMod50 <- loess(mydata$Oil_Price ~ index, data=mydata, span=0.50) # 50% Smoothing
+
+# Get Smoothed Output
+smoothed10 <- predict(loessMod10)
+#smoothed25 <- predict(loessMod25)
+#smoothed50 <- predict(loessMod50)
+
+# Plot It
+plot.ts(mydata$Total.Month, mydata$Oil_Price, xlab = "Month (beginning in May 1987)",ylab = "Price", xlim=c(0,300), main="Brent Oil Prices", type = "l")
+axis(labels = NA, side = 1, tck = 0.015,at=c(seq(from=0,to=300,by=5)))
+axis(labels = NA, side = 2, tck = 0.015,at=c(seq(from=0,to=130,by=5)))
+lines(smoothed10, col = "red")
+#lines(smoothed25, col = "green")
+#lines(smoothed50, col = "blue")
+
+#Smooth Disputes Data
+
+loessMod10_Disputes <- loess(mydata$Disputes ~ index, data=mydata, span=0.10) # 10 % Smoothing
+#loessMod25_Disputes <- loess(mydata$Disputes ~ index, data=mydata, span=0.25) # 25% Smoothing
+#loessMod50_Disputes <- loess(mydata$Disputes ~ index, data=mydata, span=0.50) # 50% Smoothing
+
+# Get Smoothed Output
+smoothed10_Disputes <- predict(loessMod10_Disputes)
+#smoothed25_Disputes <- predict(loessMod25_Disputes)
+#smoothed50_Disputes <- predict(loessMod50_Disputes)
+
+# Plot It
+plot.ts(mydata$Total.Month, mydata$Disputes, xlab = "Month (beginning in May 1987)", ylab = "Incidents", xlim=c(0,300), ylim=c(0,20), main = "Militarized Interstate Disputes", type = "l")
+lines(smoothed10_Disputes, col = "red")
+#lines(smoothed25_Disputes, col = "green")
+#lines(smoothed50_Disputes, col = "blue")
+
+
+#Plot Both on Same Graph
+plot.ts(mydata$Total.Month, mydata$Disputes, xlab = "Month (beginning in May 1987)", ylab = "Incidents", xlim=c(0,300), ylim=c(0,12), main = "Militarized Interstate Disputes and Oil Prices", type = "l")
+
+box()
+
+# Allow a second plot on the same graph
+par(new=TRUE)
+
+# Plot Second Plot with Axis Scale on the right
+plot.ts(mydata$Total.Month, mydata$Oil_Price, xlim=c(0,300), type = "l", xlab="", ylab="", axes=FALSE, col = "Red")
+
+
+# a little farther out (line=4) to make room for labels
+mtext("Oil Prices",side=4,line=3, col = "red") 
+axis(4, ylim=c(0,140), las=1, col.axis="red",col = "red")
+
+## Add Legend
+legend("topleft",legend=c("Militarized Interstate Disputes","Oil Prices"),
+       text.col=c("black","red"),lwd=0.8, cex=0.6,y.intersp=1.0, col=c("black","red"), lty=c(1,1))
+
+
+# Graph Only Smoothed Plots
+mar.default <- c(5,4,4,2) + 0.1
+par(mar = mar.default + c(1, 0, 0, 3)) 
+plot.ts(smoothed10_Disputes, xlab = "Month (beginning in May 1987)", ylab = "Incidents (smoothed lines)", xlim=c(0,300), ylim=c(0,12), main = "Militarized Interstate Disputes and Oil Prices", type = "l")
+
+
+# Allow a second plot on the same graph
+par(new=TRUE)
+
+# Plot Second Plot with Axis Scale on the right
+plot.ts(smoothed10, xlim=c(0,300), type = "l", xlab="", ylab="", axes=FALSE, col = "Red")
+
+
+# a little farther out (line=4) to make room for labels
+mtext("Oil Prices (smoothed lines)",side=4,line=3, col = "red") 
+axis(4, ylim=c(0,140),col="red",col.axis="red", las=1)
+
+## Add Legend
+legend("topleft",legend=c("Militarized Interstate Disputes","Oil Prices"),
+       text.col=c("black","red"),lwd=0.8, cex=0.6,y.intersp=1.0, col=c("black","red"), lty=c(1,1))
+
+
