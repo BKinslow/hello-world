@@ -1,0 +1,93 @@
+# 5.1. Initial data exploration, reproducing results from Excel
+
+# Clear variables, close all plots, restore defaults
+rm(list=ls())
+dev.off()
+cat("\014")
+
+# Install library to plot
+#install.packages("ggplot2")
+#install.packages("RColorBrewer")
+#install.packages("lattice")
+#install.packages("xts")
+#install.packages("forecast")
+#install.packages("lmtest")
+library(ggplot2)
+library(RColorBrewer) #for brewer.pal()
+library("lattice") # For contourplot at the end
+library(lmtest)
+
+
+# Read data
+
+mydata <- read.csv("OPEC_Total_Data.csv")
+mydata1 <- read.csv("Saudi_Real.csv")
+mydata2 <- read.csv("OPEC_real_GDP.csv")
+mydata3 <- read.csv("OPEC GDP Data_1.csv")
+mydata4 <- read.csv("OPEC GDP DATA_2.csv")
+mydata5 <- read.csv("OPEC GDP Data_Control.csv")
+
+#Granger Test
+#Does changes outages cause prices?
+grangertest(mydata$Europe.Brent ~ mydata$OPEC, order=1)
+grangertest(mydata$OPEC ~ mydata$Europe.Brent, order=1)
+grangertest(mydata1$Brent ~ mydata1$Saudi_GDP, order=1)
+grangertest(mydata1$Saudi_GDP ~ mydata1$Brent, order=1)
+grangertest(mydata2$Brent ~ mydata2$OPEC, order=1)
+grangertest(mydata2$OPEC ~ mydata2$Brent, order=1)
+
+#All OPEC 92-07
+grangertest(mydata3$Brent ~ mydata3$Algeria, order=1)
+grangertest(mydata3$Algeria ~ mydata3$Brent, order=1)
+grangertest(mydata3$Brent ~ mydata3$Angola..millions., order=1)
+grangertest(mydata3$Angola..millions. ~ mydata3$Brent, order=1)
+grangertest(mydata3$Brent ~ mydata3$Ecuador..millions., order=1)
+grangertest(mydata3$Ecuador..millions. ~ mydata3$Brent, order=1)
+grangertest(mydata3$Brent ~ mydata3$Indonesia, order=1)
+grangertest(mydata3$Indonesia ~ mydata3$Brent, order=1)
+grangertest(mydata3$Brent ~ mydata3$Iran, order=1)
+grangertest(mydata3$Iran ~ mydata3$Brent, order=1)
+grangertest(mydata3$Brent ~ mydata3$Iraq..millions., order=1)
+grangertest(mydata3$Iraq..millions. ~ mydata3$Brent, order=1)
+grangertest(mydata3$Brent ~ mydata3$Kuwait..millions., order=1)
+grangertest(mydata3$Kuwait..millions. ~ mydata3$Brent, order=1)
+grangertest(mydata3$Brent ~ mydata3$Libya..millions., order=1)
+grangertest(mydata3$Libya..millions. ~ mydata3$Brent, order=1)
+grangertest(mydata3$Brent ~ mydata3$Nigeria, order=1)
+grangertest(mydata3$Nigeria ~ mydata3$Brent, order=1)
+grangertest(mydata3$Brent ~ mydata3$Qatar..millions., order=1)
+grangertest(mydata3$Qatar..millions. ~ mydata3$Brent, order=1)
+grangertest(mydata3$Brent ~ mydata3$Saudi.Arabia, order=1)
+grangertest(mydata3$Saudi.Arabia ~ mydata3$Brent, order=1)
+grangertest(mydata3$Brent ~ mydata3$United.Arab.Emirates, order=1)
+grangertest(mydata3$United.Arab.Emirates ~ mydata3$Brent, order=1)
+grangertest(mydata3$Brent ~ mydata3$Venezuela, order=1)
+grangertest(mydata3$Venezuela ~ mydata3$Brent, order=1)
+
+
+#All OPEC 92-2015
+
+grangertest(mydata4$Brent ~ mydata4$Algeria, order=1)
+grangertest(mydata4$Algeria ~ mydata4$Brent, order=1)
+grangertest(mydata4$Brent ~ mydata4$Angola..millions., order=1)
+grangertest(mydata4$Angola..millions. ~ mydata4$Brent, order=1)
+grangertest(mydata4$Brent ~ mydata4$Ecuador..millions., order=1)
+grangertest(mydata4$Ecuador..millions. ~ mydata4$Brent, order=1)
+grangertest(mydata4$Brent ~ mydata4$Indonesia, order=1)
+grangertest(mydata4$Indonesia ~ mydata4$Brent, order=1)
+grangertest(mydata4$Brent ~ mydata4$Iran, order=1)
+grangertest(mydata4$Iran ~ mydata4$Brent, order=1)
+grangertest(mydata4$Brent ~ mydata4$Kuwait..millions., order=1)
+grangertest(mydata4$Kuwait..millions. ~ mydata4$Brent, order=1)
+grangertest(mydata4$Brent ~ mydata4$Nigeria, order=1)
+grangertest(mydata4$Nigeria ~ mydata4$Brent, order=1)
+grangertest(mydata4$Brent ~ mydata4$Qatar..millions., order=1)
+grangertest(mydata4$Qatar..millions. ~ mydata4$Brent, order=1)
+grangertest(mydata4$Brent ~ mydata4$Saudi.Arabia, order=1)
+grangertest(mydata4$Saudi.Arabia ~ mydata4$Brent, order=1)
+grangertest(mydata4$Brent ~ mydata4$United.Arab.Emirates, order=1)
+grangertest(mydata4$United.Arab.Emirates ~ mydata4$Brent, order=1)
+grangertest(mydata4$Brent ~ mydata4$Venezuela, order=1)
+grangertest(mydata4$Venezuela ~ mydata4$Brent, order=1)
+grangertest(mydata5$Brent ~ mydata5$OPEC.Total, order=1)
+grangertest(mydata5$OPEC.Total ~ mydata5$Brent, order = 1)
